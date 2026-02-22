@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Authority Brands Map Demo</title>
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <!-- Your Compiled CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- =======================
+       TOP BAR
+  ======================== -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <img src="./assets/authority_brand_logo.svg" alt="" class="logo">
+      </div>
+
+      <div class="topbar__center">
+        <input
+          type="text"
+          id="locationInput"
+          placeholder="Search business by zip code, area"
+        />
+        <button id="locationSearchBtn" disabled>Location Search</button>
+
+        <button id="brandFilterBtn" class="brand-filter-btn">
+          Brand Filter
+          <span class="arrow">▾</span>
+        </button>
+      </div>
+
+      <div class="topbar__right">
+        <div class="user"></div>
+        <span>Kent</span>
+      </div>
+    </header>
+
+    <!-- =======================
+       BRAND FILTER PANEL
+  ======================== -->
+    <div id="brandFilterPanel" class="brand-filter-panel hidden">
+      <div class="brand-filter-content">
+        <label class="all-brand-item">
+          <input type="checkbox" id="selectAllBrands" />
+          <span>All Brands</span>
+        </label>
+
+        <h4>Select/Deselect Brands</h4>
+
+        <label class="brand-item">
+          <div class="flex">
+            <input type="checkbox" class="brand-checkbox" value="hwc" />
+            <span>Homewatch CareGivers</span>
+          </div>
+          <img src="./assets/image 24.svg" alt="" />
+        </label>
+
+        <label class="brand-item">
+          <div class="flex">
+            <input type="checkbox" class="brand-checkbox" value="mse" />
+            <span>Mister Sparky Electric</span>
+          </div>
+          <img src="./assets/image 26.svg" alt="" />
+        </label>
+
+        <label class="brand-item">
+          <div class="flex">
+            <input type="checkbox" class="brand-checkbox" value="msq" />
+            <span>Mosquito Squad</span>
+          </div>
+          <img src="./assets/image 28.svg" alt="" />
+        </label>
+
+        <label class="brand-item">
+          <div class="flex">
+            <input type="checkbox" class="brand-checkbox" value="tca" />
+            <span>The Cleaning Authority</span>
+          </div>
+          <img src="./assets/image 32.svg" alt="" />
+        </label>
+      </div>
+    </div>
+
+    <!-- =======================
+       MAP CONTAINER
+  ======================== -->
+    <div id="map"></div>
+
+    <!-- =======================
+       CLOCKFACE OVERLAY
+  ======================== -->
+    <div id="clockface" class="clockface hidden">
+      <div class="clockface-ring"></div>
+
+      <!-- Brand Buttons Dynamically Positioned -->
+      <div class="clockface-brands" id="clockfaceBrands"></div>
+    </div>
+
+    <!-- =======================
+       Leaflet JS
+  ======================== -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Main JS -->
+    <script src="main.js"></script>
+  </body>
+</html>

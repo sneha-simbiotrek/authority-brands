@@ -1,0 +1,274 @@
+COLUMBUS
+
+43201: Columbus
+  HWC - Available
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43202: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43203: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Available
+
+43204: Columbus
+  HWC - Unavailable
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43205: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Available
+
+43206: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43207: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Available
+
+43209: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43210: Columbus
+  HWC - Available
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43211: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43212: Columbus
+  HWC - Available
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43213: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43214: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43215: Columbus (Main Center)
+  HWC - Available
+  MSE - Available
+  MSQ - Available
+  TCA - Available
+
+43218: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43219: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43220: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43221: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43222: Columbus
+  HWC - Available
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43223: Columbus
+  HWC - Unavailable
+  MSE - Available
+  MSQ - Unavailable
+  TCA - Available
+
+43224: Columbus
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43227: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Available
+
+43228: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43229: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43230: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43231: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43232: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43235: Columbus
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+
+SURROUNDING AREAS (Non-Columbus)
+
+43001: Alexandria
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43004: Blacklick
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43016: Dublin
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43017: Dublin
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43026: Hilliard
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43031: Johnstown
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43054: New Albany
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43062: Pataskala
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43068: Reynoldsburg
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Unavailable
+
+43081: Westerville
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43085: Worthington
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Unavailable
+
+43105: Baltimore
+  HWC - Available
+  MSE - Available
+  MSQ - Available
+  TCA - Unavailable
+
+43110: Canal Winchester
+  HWC - Unavailable
+  MSE - Available
+  MSQ - Available
+  TCA - Unavailable
+
+43119: Galloway
+  HWC - Available
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43123: Grove City
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Unavailable
+  TCA - Available
+
+43125: Groveport
+  HWC - Unavailable
+  MSE - Unavailable
+  MSQ - Available
+  TCA - Available
+
+43147: Pickerington
+  HWC - Unavailable
+  MSE - Available
+  MSQ - Available
+  TCA - Unavailable
