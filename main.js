@@ -13,10 +13,10 @@ const COLUMBUS_CENTER = [39.9612, -82.9988];
 
 // Brand metadata (icons must exist in /assets)
 const BRAND_META = {
-  hwc: { name: "Homewatch CareGivers", icon: "assets/image 28.svg" },
-  mse: { name: "Mister Sparky Electric", icon: "assets/image 32.svg" },
-  msq: { name: "Mosquito Squad", icon: "assets/image 24.svg" },
-  tca: { name: "The Cleaning Authority", icon: "assets/image 26.svg" },
+  hwc: { name: "Homewatch CareGivers", icon: "assets/HWC.svg" },
+  mse: { name: "Mister Sparky Electric", icon: "assets/MSE.svg" },
+  msq: { name: "Mosquito Squad", icon: "assets/MSQ.svg" },
+  tca: { name: "The Cleaning Authority", icon: "assets/TCA.svg" },
 };
 
 // Shared UI refs
