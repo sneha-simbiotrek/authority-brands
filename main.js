@@ -161,6 +161,7 @@ function parseLocationValue(raw) {
   if (!v) return "";
   if (v === "columbus") return "columbus";
   if (v === "columbus, ohio") return "columbus";
+  if (v === "Columbus, OH") return "columbus";
   if (v.startsWith("columbus")) return "columbus";
   return v;
 }
