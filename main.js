@@ -1,17 +1,14 @@
 let map;
 let zipLayer;
 let centerMarker;
+
 let activeBrand = null;
-
 let availabilityData = {};
-
-// Start with NO brands selected (so search stays disabled until user selects)
-let selectedBrands = [];
 
 // Columbus center
 const COLUMBUS_CENTER = [39.9612, -82.9988];
 
-// Brand metadata (icons must exist in /assets)
+// Brand metadata
 const BRAND_META = {
   hwc: { name: "Homewatch CareGivers", icon: "assets/HWC.svg" },
   mse: { name: "Mister Sparky Electric", icon: "assets/MSE.svg" },
@@ -19,42 +16,51 @@ const BRAND_META = {
   tca: { name: "The Cleaning Authority", icon: "assets/TCA.svg" },
 };
 
-// Shared UI refs
+// Client requirement: all brands always available in clockface (no filter UI)
+const FIXED_BRANDS = Object.keys(BRAND_META);
+
+// UI refs
 let locationInputEl = null;
 let locationSearchBtnEl = null;
 
-// ==============================
-// INIT
-// ==============================
+// Drawer refs
+let brandDrawerEl = null;
+let brandDrawerCloseEl = null;
+let brandDrawerLogoEl = null;
+let brandDrawerNameEl = null;
+let downloadPdfBtnEl = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   initMap();
   await loadAvailability();
   await loadZipGeoJson();
+
   setupUI();
+  setupBrandDrawer();
 });
 
-// ==============================
-// MAP SETUP
-// ==============================
+//  MAP
 
 function initMap() {
-  // map = L.map("map").setView(COLUMBUS_CENTER, 7);
   map = L.map("map", {
     attributionControl: false,
   }).setView(COLUMBUS_CENTER, 7);
 
+  // crossOrigin must be true so leaflet-image can render tiles into canvas reliably
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: false,
+    crossOrigin: true,
   }).addTo(map);
 
-  // Make clockface live INSIDE the map container so it moves with pan/zoom
+  const zipRenderer = L.canvas({ padding: 0.5 });
+  window.__zipRenderer = zipRenderer; // store it globally for reuse
+
+  // Keep clockface inside map container (so it moves correctly)
   const clockface = document.getElementById("clockface");
   if (clockface && clockface.parentElement !== map.getContainer()) {
     map.getContainer().appendChild(clockface);
   }
 
-  // Keep clockface centered on Columbus while dragging / zooming
   map.on("move zoom", positionClockface);
 }
 
@@ -63,18 +69,16 @@ async function loadZipGeoJson() {
   const geojson = await res.json();
 
   zipLayer = L.geoJSON(geojson, {
+    renderer: window.__zipRenderer,
+
     style: defaultZipStyle,
     interactive: true,
-
     onEachFeature: (feature, layer) => {
       const zip = feature.properties.zip;
       layer.options.zipCode = zip;
 
-      // show zip on hover
-      layer.on("mouseover", function (e) {
-        this.setStyle({
-          weight: 2,
-        });
+      layer.on("mouseover", function () {
+        this.setStyle({ weight: 2 });
 
         this.bindTooltip(`ZIP: ${zip}`, {
           sticky: true,
@@ -85,13 +89,8 @@ async function loadZipGeoJson() {
       });
 
       layer.on("mouseout", function () {
-        // restore original style
-        if (activeBrand) {
-          paintZipAvailability();
-        } else {
-          this.setStyle(defaultZipStyle());
-        }
-
+        if (activeBrand) paintZipAvailability();
+        else this.setStyle(defaultZipStyle());
         this.closeTooltip();
       });
 
@@ -110,80 +109,177 @@ function defaultZipStyle() {
   };
 }
 
-// ==============================
-// AVAILABILITY DATA
-// ==============================
-
 async function loadAvailability() {
   const res = await fetch("data/availability.json");
   availabilityData = await res.json();
 }
 
-// ==============================
-// SEARCH BUTTON STATE
-// ==============================
-
-function updateSearchButtonState() {
-  if (!locationInputEl || !locationSearchBtnEl) return;
-
-  const hasLocation = locationInputEl.value.trim().length > 0;
-  const hasBrand = selectedBrands.length > 0;
-
-  locationSearchBtnEl.disabled = !(hasLocation && hasBrand);
-}
-
-// ==============================
-// UI + SEARCH
-// ==============================
+//  TOPBAR SEARCH + AUTOCOMPLETE
 
 function setupUI() {
   locationSearchBtnEl = document.getElementById("locationSearchBtn");
   locationInputEl = document.getElementById("locationInput");
 
-  // Ensure button state stays correct while typing
+  if (!locationSearchBtnEl || !locationInputEl) return;
+
+  setupLocationAutocomplete();
+
   locationInputEl.addEventListener("input", updateSearchButtonState);
 
-  // Search click
+  locationInputEl.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+
+    const parsed = parseLocationValue(locationInputEl.value);
+    if (parsed === "columbus") runColumbusFlow();
+    else alert("Demo only supports 'columbus'");
+  });
+
   locationSearchBtnEl.addEventListener("click", () => {
-    const value = locationInputEl.value.trim().toLowerCase();
+    const parsed = parseLocationValue(locationInputEl.value);
+    if (!parsed) return;
 
-    // guard (button should already be disabled if invalid)
-    if (!value || !selectedBrands.length) return;
-
-    if (value !== "columbus") {
+    if (parsed !== "columbus") {
       alert("Demo only supports 'columbus'");
       return;
     }
 
-    map.setView(COLUMBUS_CENTER, 11);
-    dropCenterPin();
+    runColumbusFlow();
   });
 
-  setupBrandFilter();
   updateSearchButtonState();
 }
 
-function dropCenterPin() {
-  if (centerMarker) {
-    map.removeLayer(centerMarker);
-  }
+function updateSearchButtonState() {
+  if (!locationInputEl || !locationSearchBtnEl) return;
+  const hasLocation = locationInputEl.value.trim().length > 0;
+  locationSearchBtnEl.disabled = !hasLocation;
+}
+
+function parseLocationValue(raw) {
+  const v = (raw || "").trim().toLowerCase();
+  if (!v) return "";
+  if (v === "columbus") return "columbus";
+  if (v === "columbus, ohio") return "columbus";
+  if (v.startsWith("columbus")) return "columbus";
+  return v;
+}
+
+function runColumbusFlow() {
+  map.setView(COLUMBUS_CENTER, 11);
+  dropCenterPinAndOpenClockface();
+}
+
+function dropCenterPinAndOpenClockface() {
+  if (centerMarker) map.removeLayer(centerMarker);
 
   centerMarker = L.marker(COLUMBUS_CENTER).addTo(map);
 
-  // Tooltip at bottom (your fix)
   centerMarker.bindTooltip("COLUMBUS", {
     permanent: true,
     direction: "bottom",
-    offset: [0, 18],
+    offset: [-14, 24],
     opacity: 1,
   });
 
-  centerMarker.on("click", showClockface);
+  showClockface();
 }
 
-// ==============================
-// CLOCKFACE POSITION (STICKY)
-// ==============================
+/* Custom autocomplete (no datalist, no arrow) */
+function setupLocationAutocomplete() {
+  if (!locationInputEl) return;
+
+  locationInputEl.removeAttribute("list");
+  locationInputEl.setAttribute("autocomplete", "off");
+  locationInputEl.setAttribute("autocorrect", "off");
+  locationInputEl.setAttribute("autocapitalize", "off");
+  locationInputEl.setAttribute("spellcheck", "false");
+
+  const popup = document.createElement("div");
+  popup.id = "locationPopup";
+  popup.style.position = "fixed";
+  popup.style.zIndex = "9999";
+  popup.style.display = "none";
+  popup.style.background = "#1b1b1b";
+  popup.style.borderRadius = "12px";
+  popup.style.overflow = "hidden";
+  popup.style.boxShadow = "0 12px 30px rgba(0,0,0,0.35)";
+
+  const item = document.createElement("div");
+  item.textContent = "Columbus, Ohio";
+  item.style.padding = "16px 18px";
+  item.style.cursor = "pointer";
+  item.style.color = "#fff";
+  item.style.fontSize = "18px";
+  item.style.fontWeight = "600";
+
+  item.addEventListener(
+    "mouseenter",
+    () => (item.style.background = "#2a2a2a"),
+  );
+  item.addEventListener(
+    "mouseleave",
+    () => (item.style.background = "transparent"),
+  );
+
+  popup.appendChild(item);
+  document.body.appendChild(popup);
+
+  const positionPopup = () => {
+    const r = locationInputEl.getBoundingClientRect();
+    popup.style.left = `${r.left}px`;
+    popup.style.top = `${r.bottom + 10}px`;
+    popup.style.width = `${r.width}px`;
+  };
+
+  const showPopup = () => {
+    positionPopup();
+    popup.style.display = "block";
+  };
+
+  const hidePopup = () => {
+    popup.style.display = "none";
+  };
+
+  const shouldShow = (val) => {
+    const v = (val || "").trim().toLowerCase();
+    return v.length >= 3 && v.startsWith("col");
+  };
+
+  locationInputEl.addEventListener("input", () => {
+    if (shouldShow(locationInputEl.value)) showPopup();
+    else hidePopup();
+  });
+
+  // IMPORTANT: use mousedown so blur doesn't cancel the selection
+  item.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    locationInputEl.value = "Columbus, Ohio";
+    hidePopup();
+    updateSearchButtonState();
+    runColumbusFlow();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (e.target === locationInputEl) return;
+    if (popup.contains(e.target)) return;
+    hidePopup();
+  });
+
+  window.addEventListener("resize", () => {
+    if (popup.style.display === "block") positionPopup();
+  });
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (popup.style.display === "block") positionPopup();
+    },
+    true,
+  );
+}
+
+//  CLOCKFACE
 
 function positionClockface() {
   const clockface = document.getElementById("clockface");
@@ -196,28 +292,20 @@ function positionClockface() {
   clockface.style.top = `${point.y - 130}px`;
 }
 
-// ==============================
-// CLOCKFACE RENDER + BEHAVIOR
-// ==============================
-
 function showClockface() {
   const clockface = document.getElementById("clockface");
   const brandContainer = document.getElementById("clockfaceBrands");
+  if (!clockface || !brandContainer) return;
 
   clockface.classList.remove("hidden");
   brandContainer.innerHTML = "";
 
-  // Put it exactly around Columbus pin
   positionClockface();
 
-  const brandsToShow = selectedBrands.length
-    ? selectedBrands
-    : Object.keys(BRAND_META);
-
+  const brandsToShow = FIXED_BRANDS;
   const radius = 100;
   const total = brandsToShow.length;
 
-  // If a brand is active, enable "has-selection" mode, else remove it
   if (activeBrand) clockface.classList.add("has-selection");
   else clockface.classList.remove("has-selection");
 
@@ -233,10 +321,9 @@ function showClockface() {
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
 
-    // Mark selected node (stays white while others go dark when has-selection is on)
     if (activeBrand === brandId) node.classList.add("is-selected");
 
-    node.innerHTML = `<img src="${BRAND_META[brandId].icon}" />`;
+    node.innerHTML = `<img src="${BRAND_META[brandId].icon}" alt="${BRAND_META[brandId].name}" />`;
 
     node.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -250,7 +337,6 @@ function showClockface() {
 function syncClockfaceSelectionUI() {
   const clockface = document.getElementById("clockface");
   const brandNodes = document.querySelectorAll(".brand-node");
-
   if (!clockface) return;
 
   if (activeBrand) clockface.classList.add("has-selection");
@@ -264,22 +350,22 @@ function syncClockfaceSelectionUI() {
 }
 
 function activateBrand(brandId) {
-  // Toggle off if same brand clicked again → back to homepage state
+  // Toggle off
   if (activeBrand === brandId) {
     activeBrand = null;
     resetZipStyles();
     syncClockfaceSelectionUI();
+    closeBrandDrawer();
     return;
   }
 
   activeBrand = brandId;
   syncClockfaceSelectionUI();
   paintZipAvailability();
+  openBrandDrawer(brandId);
 }
 
-// ==============================
-// PAINT ZIP POLYGONS
-// ==============================
+//  ZIP PAINT
 
 function paintZipAvailability() {
   if (!zipLayer) return;
@@ -320,57 +406,269 @@ function resetZipStyles() {
   });
 }
 
-// ==============================
-// BRAND FILTER PANEL
-// ==============================
+//  BRAND DRAWER
 
-function setupBrandFilter() {
-  const btn = document.getElementById("brandFilterBtn");
-  const panel = document.getElementById("brandFilterPanel");
-  const checkboxes = document.querySelectorAll(".brand-checkbox");
-  const selectAll = document.getElementById("selectAllBrands");
+function setupBrandDrawer() {
+  brandDrawerEl = document.getElementById("brandDrawer");
+  brandDrawerCloseEl = document.getElementById("brandDrawerClose");
+  brandDrawerLogoEl = document.getElementById("brandDrawerLogo");
+  brandDrawerNameEl = document.getElementById("brandDrawerName");
+  downloadPdfBtnEl = document.getElementById("downloadPdfBtn");
 
-  btn.addEventListener("click", () => {
-    panel.classList.toggle("hidden");
+  // If you haven't added the drawer markup yet, don't crash
+  if (
+    !brandDrawerEl ||
+    !brandDrawerCloseEl ||
+    !brandDrawerLogoEl ||
+    !brandDrawerNameEl ||
+    !downloadPdfBtnEl
+  ) {
+    return;
+  }
+
+  brandDrawerCloseEl.addEventListener("click", () => {
+    closeBrandDrawer();
   });
 
-  // Default: none selected (matches your search rule)
-  selectAll.checked = false;
-  checkboxes.forEach((cb) => (cb.checked = false));
-  selectedBrands = [];
-  updateSearchButtonState();
+  downloadPdfBtnEl.addEventListener("click", async () => {
+    if (!activeBrand) return;
+    await generateBrandPdf(activeBrand);
+  });
+}
 
-  selectAll.addEventListener("change", (e) => {
-    if (e.target.checked) {
-      selectedBrands = Object.keys(BRAND_META);
-      checkboxes.forEach((cb) => (cb.checked = true));
-    } else {
-      selectedBrands = [];
-      checkboxes.forEach((cb) => (cb.checked = false));
-    }
+function openBrandDrawer(brandId) {
+  if (!brandDrawerEl) return;
 
-    updateSearchButtonState();
+  const meta = BRAND_META[brandId];
+  if (!meta) return;
 
-    // If clockface is open, re-render nodes based on selection set
-    if (!document.getElementById("clockface").classList.contains("hidden")) {
-      showClockface();
-    }
+  brandDrawerLogoEl.src = meta.icon;
+  brandDrawerLogoEl.alt = meta.name;
+  brandDrawerNameEl.textContent = meta.name;
+
+  brandDrawerEl.classList.add("is-open");
+  brandDrawerEl.setAttribute("aria-hidden", "false");
+}
+
+function closeBrandDrawer() {
+  if (!brandDrawerEl) return;
+  brandDrawerEl.classList.remove("is-open");
+  brandDrawerEl.setAttribute("aria-hidden", "true");
+}
+
+
+function getZipListsForBrand(brandId) {
+  const brandMap = availabilityData?.[brandId] || {};
+  const available = [];
+  const unavailable = [];
+
+  Object.keys(brandMap).forEach((zip) => {
+    const status = brandMap[zip];
+    if (status === "available") available.push(zip);
+    else if (status === "unavailable") unavailable.push(zip);
   });
 
-  checkboxes.forEach((cb) => {
-    cb.addEventListener("change", () => {
-      selectedBrands = Array.from(checkboxes)
-        .filter((c) => c.checked)
-        .map((c) => c.value);
+  const sortZip = (a, b) => Number(a) - Number(b);
+  available.sort(sortZip);
+  unavailable.sort(sortZip);
 
-      selectAll.checked = selectedBrands.length === checkboxes.length;
+  return { available, unavailable };
+}
 
-      updateSearchButtonState();
+function getMapSnapshotDataUrl() {
+  return new Promise((resolve, reject) => {
+    if (!map) return reject(new Error("Map not initialized"));
+    if (!window.leafletImage)
+      return reject(new Error("leaflet-image not loaded"));
 
-      // If clockface is open, re-render nodes based on selection set
-      if (!document.getElementById("clockface").classList.contains("hidden")) {
-        showClockface();
+    // hide overlays so snapshot is clean map only
+    const clockface = document.getElementById("clockface");
+    const drawer = document.getElementById("brandDrawer");
+
+    const prevClockfaceDisplay = clockface ? clockface.style.display : "";
+    const prevDrawerDisplay = drawer ? drawer.style.display : "";
+
+    if (clockface) clockface.style.display = "none";
+    if (drawer) drawer.style.display = "none";
+
+    window.leafletImage(map, (err, canvas) => {
+      // restore overlays
+      if (clockface) clockface.style.display = prevClockfaceDisplay;
+      if (drawer) drawer.style.display = prevDrawerDisplay;
+
+      if (err) return reject(err);
+
+      try {
+        resolve(canvas.toDataURL("image/png"));
+      } catch (e) {
+        reject(e);
       }
     });
   });
+}
+
+async function svgUrlToPngDataUrl(svgUrl, size = 64) {
+  const res = await fetch(svgUrl);
+  const svgText = await res.text();
+
+  const svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+  const blobUrl = URL.createObjectURL(svgBlob);
+
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = blobUrl;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, size, size);
+
+    const scale = Math.min(size / img.width, size / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    const x = (size - w) / 2;
+    const y = (size - h) / 2;
+
+    ctx.drawImage(img, x, y, w, h);
+
+    return canvas.toDataURL("image/png");
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+}
+
+async function generateBrandPdf(brandId) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("PDF library not loaded. Check jsPDF script include.");
+    return;
+  }
+
+  const meta = BRAND_META[brandId];
+  if (!meta) return;
+
+  const { available, unavailable } = getZipListsForBrand(brandId);
+
+  const doc = new window.jspdf.jsPDF({
+    orientation: "p",
+    unit: "pt",
+    format: "a4",
+  });
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  // --- Header: logo + name
+  let y = 46;
+
+  let logoPng = null;
+  try {
+    logoPng = await svgUrlToPngDataUrl(meta.icon, 56);
+  } catch {
+    logoPng = null;
+  }
+
+  if (logoPng) {
+    doc.addImage(logoPng, "PNG", margin, y - 26, 32, 32);
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(meta.name, margin + (logoPng ? 44 : 0), y);
+
+  y += 18;
+
+  // Divider
+  doc.setDrawColor(210);
+  doc.line(margin, y, pageW - margin, y);
+  y += 16;
+
+  // --- Map snapshot image (top)
+  let mapImg = null;
+  try {
+    mapImg = await getMapSnapshotDataUrl();
+  } catch {
+    mapImg = null;
+  }
+
+  if (mapImg) {
+    const imgW = pageW - margin * 2;
+    const imgH = 270; // tuned for A4 layout
+
+    doc.addImage(mapImg, "PNG", margin, y, imgW, imgH);
+    y += imgH + 18;
+  } else {
+    y += 8;
+  }
+
+  // --- Two columns under the image
+  const gutter = 24;
+  const colW = (pageW - margin * 2 - gutter) / 2;
+  const leftX = margin;
+  const rightX = margin + colW + gutter;
+
+  const drawColumnHeaders = (topY) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("AVAILABLE", leftX, topY);
+    doc.text("UNAVAILABLE", rightX, topY);
+
+    const lineY = topY + 10;
+    doc.setDrawColor(230);
+    doc.line(leftX, lineY, leftX + colW, lineY);
+    doc.line(rightX, lineY, rightX + colW, lineY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+
+    return lineY + 18;
+  };
+
+  // If there's not enough space on first page, start lists on a new page
+  if (y > pageH - margin - 120) {
+    doc.addPage();
+    y = margin;
+  }
+
+  let startY = drawColumnHeaders(y);
+
+  const lineH = 14;
+
+  // write two columns page-aware (keeps both lists aligned by row count)
+  let i = 0;
+  let j = 0;
+
+  while (i < available.length || j < unavailable.length) {
+    if (startY > pageH - margin) {
+      doc.addPage();
+      startY = margin;
+      startY = drawColumnHeaders(startY);
+    }
+
+    if (i < available.length) {
+      doc.text(String(available[i]), leftX, startY);
+      i++;
+    }
+
+    if (j < unavailable.length) {
+      doc.text(String(unavailable[j]), rightX, startY);
+      j++;
+    }
+
+    startY += lineH;
+  }
+
+  const safeName = meta.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  doc.save(`${safeName}-columbus-report.pdf`);
 }

@@ -16,12 +16,9 @@
   </head>
 
   <body>
-    <!-- =======================
-       TOP BAR
-  ======================== -->
     <header class="topbar">
       <div class="topbar__left">
-        <img src="./assets/authority_brand_logo.svg" alt="" class="logo">
+        <img src="./assets/authority_brand_logo.svg" alt="" class="logo" />
       </div>
 
       <div class="topbar__center">
@@ -32,10 +29,10 @@
         />
         <button id="locationSearchBtn" disabled>Location Search</button>
 
-        <button id="brandFilterBtn" class="brand-filter-btn">
+        <!-- <button id="brandFilterBtn" class="brand-filter-btn">
           Brand Filter
           <span class="arrow">▾</span>
-        </button>
+        </button> -->
       </div>
 
       <div class="topbar__right">
@@ -44,9 +41,6 @@
       </div>
     </header>
 
-    <!-- =======================
-       BRAND FILTER PANEL
-  ======================== -->
     <div id="brandFilterPanel" class="brand-filter-panel hidden">
       <div class="brand-filter-content">
         <label class="all-brand-item">
@@ -90,25 +84,41 @@
       </div>
     </div>
 
-    <!-- =======================
-       MAP CONTAINER
-  ======================== -->
     <div id="map"></div>
 
-    <!-- =======================
-       CLOCKFACE OVERLAY
-  ======================== -->
     <div id="clockface" class="clockface hidden">
       <div class="clockface-ring"></div>
 
-      <!-- Brand Buttons Dynamically Positioned -->
       <div class="clockface-brands" id="clockfaceBrands"></div>
     </div>
 
-    <!-- =======================
-       Leaflet JS
-  ======================== -->
+    <aside id="brandDrawer" class="brand-drawer" aria-hidden="true">
+      <div class="brand-drawer__card">
+        <button
+          id="brandDrawerClose"
+          class="brand-drawer__close"
+          type="button"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <div class="brand-drawer__header">
+          <img id="brandDrawerLogo" src="" alt="" class="brand-drawer__logo" />
+          <div class="brand-drawer__meta">
+            <div id="brandDrawerName" class="brand-drawer__name"></div>
+          </div>
+        </div>
+
+        <button id="downloadPdfBtn" class="brand-drawer__btn" type="button">
+          Download PDF
+        </button>
+      </div>
+    </aside>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet-image/leaflet-image.js"></script>
 
     <!-- Main JS -->
     <script src="main.js"></script>

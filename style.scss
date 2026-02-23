@@ -11,9 +11,7 @@ body {
   overflow: hidden;
 }
 
-/* =========================
-   TOP BAR
-========================= */
+//  TOP BAR
 
 .topbar {
   height: 70px;
@@ -96,9 +94,7 @@ body {
   }
 }
 
-/* =========================
-   BRAND FILTER PANEL
-========================= */
+//  BRAND FILTER PANEL
 
 .brand-filter-panel {
   position: absolute;
@@ -153,9 +149,7 @@ body {
   }
 }
 
-/* =========================
-   MAP
-========================= */
+//  MAP
 
 #map {
   height: calc(100vh - 70px);
@@ -164,13 +158,7 @@ body {
   z-index: 1;
 }
 
-/* =========================
-   CLOCKFACE
-========================= */
-
-/* =========================
-   clockface
-========================= */
+//  CLOCKFACE
 
 .clockface {
   position: absolute;
@@ -183,10 +171,6 @@ body {
     display: none;
   }
 
-  /*
-    add this class on the wrapper when a brand is selected:
-    <div id="clockface" class="clockface has-selection">
-  */
   &.has-selection {
     .clockface-brands {
       .brand-node {
@@ -262,10 +246,6 @@ body {
         transform: scale(1.08);
       }
 
-      /*
-        add this class on the clicked node:
-        node.classList.add("is-selected")
-      */
       &.is-selected {
         background: #ffffff;
         border-color: rgba(15, 63, 68, 0.22);
@@ -274,9 +254,7 @@ body {
   }
 }
 
-/* =========================
-   ZIP COLOR STATES
-========================= */
+//  ZIP COLOR STATES
 
 .available {
   fill: #4caf50 !important;
@@ -311,4 +289,97 @@ body {
 
 .leaflet-interactive {
   -webkit-tap-highlight-color: transparent;
+}
+
+//  BRAND DOWNLOAD DRAWER
+
+.brand-drawer {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 320px;
+  z-index: 1200;
+
+  // hidden by default
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-120%);
+  transition:
+    transform 0.28s ease,
+    opacity 0.2s ease;
+
+  &.is-open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &__card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    padding: 16px 16px 14px;
+    position: relative;
+  }
+
+  &__close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: #2f3336;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 34px;
+  }
+
+  &__logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f5f7f9;
+    padding: 10px;
+    object-fit: contain;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__name {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #0f3f44;
+    text-transform: uppercase;
+  }
+
+  &__btn {
+    margin-top: 14px;
+    width: 100%;
+    height: 38px;
+    border: 0;
+    border-radius: 6px;
+    background: #1fa497;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #188a80;
+    }
+  }
 }
