@@ -207,7 +207,7 @@ function setupLocationAutocomplete() {
   popup.style.boxShadow = "0 12px 30px rgba(0,0,0,0.35)";
 
   const item = document.createElement("div");
-  item.textContent = "Columbus, Ohio";
+  item.textContent = "Columbus, OH";
   item.style.padding = "16px 18px";
   item.style.cursor = "pointer";
   item.style.color = "#fff";
@@ -255,7 +255,7 @@ function setupLocationAutocomplete() {
   // IMPORTANT: use mousedown so blur doesn't cancel the selection
   item.addEventListener("mousedown", (e) => {
     e.preventDefault();
-    locationInputEl.value = "Columbus, Ohio";
+    locationInputEl.value = "Columbus, OH";
     hidePopup();
     updateSearchButtonState();
     runColumbusFlow();
@@ -431,9 +431,15 @@ function setupBrandDrawer() {
     closeBrandDrawer();
   });
 
-  downloadPdfBtnEl.addEventListener("click", async () => {
-    if (!activeBrand) return;
-    await generateBrandPdf(activeBrand);
+  downloadPdfBtnEl.addEventListener("click", () => {
+    const pdfPath = "assets/availabilityOutput.pdf"; 
+
+    const a = document.createElement("a");
+    a.href = pdfPath;
+    a.download = "availabilityOutput.pdf"; 
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   });
 }
 
@@ -456,7 +462,6 @@ function closeBrandDrawer() {
   brandDrawerEl.classList.remove("is-open");
   brandDrawerEl.setAttribute("aria-hidden", "true");
 }
-
 
 function getZipListsForBrand(brandId) {
   const brandMap = availabilityData?.[brandId] || {};
