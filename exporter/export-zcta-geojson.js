@@ -1,11 +1,4 @@
-/**
- * exports real ZIP polygons (ZCTA) from US Census TIGERweb
- * reads:  exporter/refined.txt
- * writes: data/columbus-zips.geojson
- *
- * run from project root:
- *   node exporter/export-zcta-geojson.js
- */
+
 
 const fs = require("fs");
 const path = require("path");
